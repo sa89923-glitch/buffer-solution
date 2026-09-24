@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>緩衝溶液：從實驗現象發現它</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            750: '#1e293b',
+                            850: '#0f172a',
+                            900: '#0b0f19'
+                        },
+                        chem: {
+                            acid: '#ef4444',
+                            base: '#3b82f6',
+                            buffer: '#10b981',
+                            accent: '#8b5cf6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .liquid-surface {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        input[type=range] {
+            height: 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-gradient-to-tr from-emerald-500 to-cyan-500 rounded-xl text-white shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid font-bold fa-flask-vial text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg sm:text-xl bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                        緩衝溶液：從實驗現象發現它
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">互動化學實驗室 • 可調體積與濃度體系</p>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Buttons -->
+            <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700/50">
+                <button id="tab1-btn" onclick="switchTab('tab1')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-emerald-600 text-white shadow-md">
+                    <i class="fa-solid fa-vial mr-1.5"></i>🧪 實驗一：現象發現
+                </button>
+                <button id="tab2-btn" onclick="switchTab('tab2')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-boxes-stacked mr-1.5"></i>⚗️ 實驗二：三大配置法
+                </button>
+                <button id="tab3-btn" onclick="switchTab('tab3')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-chart-line mr-1.5"></i>📊 pH 滴定與緩衝能力
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: 實驗一：水與緩衝溶液比較 -->
+        <section id="tab1" class="space-y-6">
+            <div class="bg-gradient-to-r from-slate-800 to-slate-850 p-5 rounded-2xl border border-slate-700/60 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-emerald-400 flex items-center mb-1">
+                        <i class="fa-solid fa-lightbulb text-amber-400 mr-2"></i>核心發現：為什麼需要緩衝溶液？
+                    </h2>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        純水加入極少量的強酸或強鹼時，pH 值會發生劇烈的暴漲或暴跌。「緩衝溶液」則能抗拒外加少量酸鹼引起的 pH 變動，維持酸鹼度相對穩定！
+                    </p>
+                </div>
+            </div>
+
+            <!-- Experiment Control and Beaker Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Control Panel -->
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-slate-200 border-b border-slate-700 pb-2 flex items-center">
+                            <i class="fa-solid fa-sliders text-cyan-400 mr-2"></i>選擇測試溶液體系
+                        </h3>
+                        
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">試樣選擇</label>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button onclick="setTab1Solution('pure_water')" id="sol-pure_water" class="sol-btn px-3.5 py-3 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-left text-xs sm:text-sm font-medium transition flex items-center text-emerald-300">
+                                    <span>💧 純水 ($H_2O$)</span>
+                                </button>
+                                <button onclick="setTab1Solution('hcl_alone')" id="sol-hcl_alone" class="sol-btn px-3.5 py-3 rounded-xl border border-slate-700 bg-slate-800/50 text-left text-xs sm:text-sm font-medium transition flex items-center text-slate-300 hover:bg-slate-700/50">
+                                    <span>🧪 強酸溶液 ($HCl$)</span>
+                                </button>
+                                <button onclick="setTab1Solution('ch3cooh_alone')" id="sol-ch3cooh_alone" class="sol-btn px-3.5 py-3 rounded-xl border border-slate-700 bg-slate-800/50 text-left text-xs sm:text-sm font-medium transition flex items-center text-slate-300 hover:bg-slate-700/50">
+                                    <span>🍋 弱酸溶液 ($CH_3COOH$)</span>
+                                </button>
+                                <button onclick="setTab1Solution('nh3_alone')" id="sol-nh3_alone" class="sol-btn px-3.5 py-3 rounded-xl border border-slate-700 bg-slate-800/50 text-left text-xs sm:text-sm font-medium transition flex items-center text-slate-300 hover:bg-slate-700/50">
+                                    <span>🧼 弱鹼溶液 ($NH_3$)</span>
+                                </button>
+                                <button onclick="setTab1Solution('acetate_buffer')" id="sol-acetate_buffer" class="sol-btn px-3.5 py-3 rounded-xl border border-slate-700 bg-slate-800/50 text-left text-xs sm:text-sm font-medium transition flex items-center text-slate-300 hover:bg-slate-700/50">
+                                    <span>🧪 醋酸 + 醋酸鈉 混合溶液 ($CH_3COOH + CH_3COONa$)</span>
+                                </button>
+                                <button onclick="setTab1Solution('ammonia_buffer')" id="sol-ammonia_buffer" class="sol-btn px-3.5 py-3 rounded-xl border border-slate-700 bg-slate-800/50 text-left text-xs sm:text-sm font-medium transition flex items-center text-slate-300 hover:bg-slate-700/50">
+                                    <span>🧪 氨水 + 氯化銨 混合溶液 ($NH_3 + NH_4Cl$)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Indicator Choice -->
+                        <div class="space-y-1.5 pt-2 border-t border-slate-700/60">
+                            <label class="text-xs font-semibold text-slate-400">酸鹼指示劑類型</label>
+                            <select id="tab1-indicator" onchange="updateTab1UI()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <option value="universal">廣用指示劑 (Universal Indicator)</option>
+                                <option value="phenolphthalein">酚酞指示劑 (Phenolphthalein)</option>
+                                <option value="bromothymol">溴酚藍 / 溴藍草酚 (Bromothymol Blue)</option>
+                            </select>
+                        </div>
+
+                        <!-- Dropper Action Buttons -->
+                        <div class="pt-2 border-t border-slate-700/60 space-y-2">
+                            <label class="text-xs font-semibold text-slate-400">滴加酸鹼試劑 (1.0 M HCl / NaOH)</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="addDropTab1('hcl')" class="px-3 py-2.5 bg-red-600/20 border border-red-500/40 hover:bg-red-600/30 text-red-300 rounded-xl font-medium text-xs flex items-center justify-center space-x-1.5 transition active:scale-95">
+                                    <i class="fa-solid fa-droplet text-red-400"></i>
+                                    <span>滴加 1滴 HCl</span>
+                                </button>
+                                <button onclick="addDropTab1('naoh')" class="px-3 py-2.5 bg-blue-600/20 border border-blue-500/40 hover:bg-blue-600/30 text-blue-300 rounded-xl font-medium text-xs flex items-center justify-center space-x-1.5 transition active:scale-95">
+                                    <i class="fa-solid fa-droplet text-blue-400"></i>
+                                    <span>滴加 1滴 NaOH</span>
+                                </button>
+                            </div>
+                            <button onclick="resetTab1()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-1">
+                                <i class="fa-solid fa-rotate-left mr-1"></i>重置此實驗
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center & Right: Beaker Canvas + Ions Display -->
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 relative">
+                        
+                        <!-- Beaker Graphic Component -->
+                        <div class="relative w-64 h-80 border-b-4 border-l-4 border-r-4 border-slate-400/50 rounded-b-3xl bg-slate-800/30 backdrop-blur-sm flex flex-col justify-end p-2 shadow-2xl overflow-hidden group">
+                            <div id="tab1-dropper" class="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-300 pointer-events-none">
+                                <div class="w-3 h-10 bg-amber-200/40 rounded-t border border-amber-300"></div>
+                                <div class="w-1 h-3 bg-slate-300 mx-auto"></div>
+                            </div>
+
+                            <!-- Beaker Liquid Container -->
+                            <div id="tab1-liquid" class="w-full h-3/5 rounded-b-2xl transition-colors duration-700 relative overflow-hidden flex flex-col justify-between p-3" style="background-color: rgba(34, 197, 94, 0.35);">
+                                <div class="liquid-surface"></div>
+                            </div>
+
+                            <div class="absolute right-2 top-16 bottom-6 flex flex-col justify-between text-[10px] text-slate-400 font-mono select-none pointer-events-none">
+                                <span>100 ml</span>
+                                <span>80 ml</span>
+                                <span>60 ml</span>
+                                <span>40 ml</span>
+                                <span>20 ml</span>
+                            </div>
+                        </div>
+
+                        <!-- Digital pH Meter & Chemical Ion Summary -->
+                        <div class="flex-1 space-y-4 w-full">
+                            <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl p-4 shadow-inner relative overflow-hidden">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-xs font-mono text-emerald-400 uppercase tracking-widest flex items-center">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span>
+                                        數位相位 pH 計
+                                    </span>
+                                    <span id="tab1-status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">中性</span>
+                                </div>
+                                <div class="flex items-baseline justify-between">
+                                    <div class="text-5xl font-mono font-bold tracking-tight text-slate-100" id="tab1-ph-val">
+                                        7.00
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-xs text-slate-400">總累積滴入量</div>
+                                        <div class="text-sm font-semibold text-slate-200" id="tab1-drop-count">0 滴</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 h-2 rounded-full w-full bg-gradient-to-r from-red-500 via-green-500 to-blue-600 relative overflow-hidden">
+                                    <div id="tab1-ph-indicator-pin" class="absolute top-0 bottom-0 w-1.5 bg-white border border-slate-900 rounded-full transition-all duration-500" style="left: 50%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex justify-between">
+                                    <span>微觀粒子相對濃度</span>
+                                    <span class="text-slate-500 font-normal">即時估算</span>
+                                </h4>
+                                <div id="tab1-particle-list" class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                                </div>
+                            </div>
+
+                            <div id="tab1-explanation-box" class="p-3.5 bg-slate-800/80 rounded-xl border border-slate-700/70 text-xs leading-relaxed text-slate-300">
+                                正在測試：純水。未加入任何酸鹼。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Dynamic pH Chart -->
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-semibold text-slate-200 text-sm flex items-center">
+                                <i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i>滴加過程 pH 變動對比圖
+                            </h3>
+                            <button onclick="clearChart1()" class="text-xs text-slate-400 hover:text-white underline">清除歷史曲線</button>
+                        </div>
+                        <div class="h-48 relative">
+                            <canvas id="tab1-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 實驗二：多種緩衝溶液配置組合 (含體積與濃度獨立調節) -->
+        <section id="tab2" class="space-y-6 hidden">
+            <div class="bg-gradient-to-r from-slate-800 to-slate-850 p-5 rounded-2xl border border-slate-700/60 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-cyan-400 flex items-center mb-1">
+                        <i class="fa-solid fa-cubes-stacked mr-2"></i>緩衝溶液 3 大化學配方與體積、濃度調控
+                    </h2>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        可自由同時調整每一種成份的<b>體積 (mL)</b>與<b>莫耳濃度 (M)</b>，即時計算莫耳數 $mmol = V \times M$，並由亨德森-哈塞爾巴赫方程預測最終 pH 值！
+                    </p>
+                </div>
+                <!-- Preset Quick Buttons -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="applyPresetTab2('53_58')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-xs font-mono text-amber-300 transition">
+                        🎯 預設範例: 53 mL CH₃COOH + 58 mL CH₃COONa (0.1M)
+                    </button>
+                    <button onclick="applyPresetTab2('equal')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-xs font-mono text-emerald-300 transition">
+                        ⚖️ 等莫耳對: 100 mL (0.1M) + 100 mL (0.1M)
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Method & Parameter Selector Panel -->
+                <div class="lg:col-span-5 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <!-- Step 1: System Selection -->
+                        <div>
+                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 block">1. 選擇緩衝體系類型</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="setBufferType('acidic')" id="type-acidic-btn" class="px-3 py-2.5 rounded-xl border border-amber-500/50 bg-amber-500/20 text-amber-300 font-semibold text-xs text-center transition">
+                                    🍋 酸性緩衝系<br><span class="text-[10px] font-normal">($CH_3COOH / CH_3COO^-$)</span>
+                                </button>
+                                <button onclick="setBufferType('basic')" id="type-basic-btn" class="px-3 py-2.5 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 font-semibold text-xs text-center transition hover:bg-slate-700/50">
+                                    🧼 鹼性緩衝系<br><span class="text-[10px] font-normal">($NH_3 / NH_4^+$)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Method Selection -->
+                        <div>
+                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 block">2. 選擇配製途徑 (法 1 ~ 法 3)</label>
+                            <div class="space-y-2" id="method-options-container">
+                                <!-- Generated by JS based on acidic/basic choice -->
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Volume & Concentration Sliders -->
+                        <div class="space-y-4 pt-3 border-t border-slate-700/60" id="sliders-container">
+                            <!-- Generated dynamically by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Visual Reaction & Buffer Analysis -->
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- Chemical Equation & Reaction Balance Display -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-slate-200 text-sm flex items-center justify-between border-b border-slate-700/70 pb-2">
+                            <span><i class="fa-solid fa-vial-circle-check text-cyan-400 mr-2"></i>反應式與化學計量表 (ICE Table in mmol)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-cyan-900/40 text-cyan-300 border border-cyan-700/50" id="pka-label">pKa = 4.75</span>
+                        </h3>
+
+                        <!-- Chemical Equation Display -->
+                        <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-center font-mono text-sm sm:text-base text-cyan-200 overflow-x-auto shadow-inner" id="reaction-equation-math">
+                            <!-- KaTeX Reaction Rendered Here -->
+                        </div>
+
+                        <!-- ICE Table (Initial, Change, Equilibrium) -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-slate-300 font-mono">
+                                <thead class="bg-slate-800/70 text-slate-400 border-b border-slate-700">
+                                    <tr>
+                                        <th class="py-2 px-3">狀態</th>
+                                        <th class="py-2 px-3" id="ice-col-1">反應物 A (mmol)</th>
+                                        <th class="py-2 px-3" id="ice-col-2">反應物 B (mmol)</th>
+                                        <th class="py-2 px-3" id="ice-col-3">生成物/共軛體 (mmol)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800">
+                                    <tr>
+                                        <td class="py-2 px-3 text-slate-400 font-semibold">初 (Initial)</td>
+                                        <td class="py-2 px-3" id="ice-i1">0.0</td>
+                                        <td class="py-2 px-3" id="ice-i2">0.0</td>
+                                        <td class="py-2 px-3" id="ice-i3">0.0</td>
+                                    </tr>
+                                    <tr class="text-amber-400">
+                                        <td class="py-2 px-3 font-semibold">變 (Change)</td>
+                                        <td class="py-2 px-3" id="ice-c1">0.0</td>
+                                        <td class="py-2 px-3" id="ice-c2">0.0</td>
+                                        <td class="py-2 px-3" id="ice-c3">0.0</td>
+                                    </tr>
+                                    <tr class="bg-emerald-950/20 text-emerald-300 font-bold border-t border-emerald-800/50">
+                                        <td class="py-2 px-3">末 (Final)</td>
+                                        <td class="py-2 px-3" id="ice-f1">0.0</td>
+                                        <td class="py-2 px-3" id="ice-f2">0.0</td>
+                                        <td class="py-2 px-3" id="ice-f3">0.0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Henderson-Hasselbalch Equation Box -->
+                    <div class="glass-panel p-5 rounded-2xl bg-gradient-to-br from-slate-800/90 to-emerald-950/20 border-emerald-500/30 space-y-3">
+                        <h3 class="font-semibold text-emerald-300 text-sm flex items-center">
+                            <i class="fa-solid fa-calculator mr-2"></i>亨德森-哈塞爾巴赫方程 (Henderson-Hasselbalch Calculation)
+                        </h3>
+
+                        <div class="bg-slate-950/90 p-4 rounded-xl border border-emerald-900/50 text-center font-mono text-emerald-200 overflow-x-auto" id="hh-math-display">
+                            <!-- KaTeX HH equation rendered here -->
+                        </div>
+
+                        <!-- Resulting pH Gauge Display -->
+                        <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-700/70">
+                            <div>
+                                <span class="text-xs text-slate-400 block">混合後最終溶液 pH 值</span>
+                                <span class="text-xs font-mono text-emerald-400" id="ratio-text">[共軛鹼] / [共軛酸] 比值 = 1.00</span>
+                            </div>
+                            <div class="text-3xl font-mono font-bold text-amber-300" id="calculated-ph-val">
+                                4.75
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Buffer Pair Ratio Bar -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-2">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex justify-between">
+                            <span>有效緩衝對莫耳比例 (Buffer Pair Proportion)</span>
+                            <span id="buffer-capacity-tag" class="text-emerald-400">緩衝容量狀態: 佳</span>
+                        </label>
+                        <div class="h-6 rounded-xl bg-slate-900 overflow-hidden flex p-1 border border-slate-700">
+                            <div id="bar-acid" class="bg-amber-500 h-full rounded-l-lg transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-slate-950" style="width: 50%;">酸形</div>
+                            <div id="bar-base" class="bg-cyan-500 h-full rounded-r-lg transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-slate-950" style="width: 50%;">鹼形</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: pH 滴定與緩衝能力抗壓測試 -->
+        <section id="tab3" class="space-y-6 hidden">
+            <div class="bg-gradient-to-r from-slate-800 to-slate-850 p-5 rounded-2xl border border-slate-700/60 shadow-xl">
+                <h2 class="text-xl font-bold text-purple-400 flex items-center mb-1">
+                    <i class="fa-solid fa-shield-halved mr-2"></i>緩衝能力極限與滴定抗壓測試
+                </h2>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    當外加的強酸或強鹼莫耳數超過緩衝對儲備時，緩衝系統會耗盡崩潰，pH 值便會瞬間發生劇烈突破！
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Stress Test Control Board -->
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-slate-200 text-sm border-b border-slate-700 pb-2">
+                            <i class="fa-solid fa-gamepad text-purple-400 mr-2"></i>滴定模擬控制器
+                        </h3>
+
+                        <!-- Target Solution Select -->
+                        <div>
+                            <label class="text-xs font-semibold text-slate-400 block mb-1">受測溶液系統</label>
+                            <select id="tab3-target-system" onchange="initTab3Simulation()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                                <option value="tab2_custom">使用實驗二當前設定之客製化溶液</option>
+                                <option value="pure_water_100ml">100 mL 純水 (H2O)</option>
+                                <option value="standard_acetate_buffer">標準醋酸緩衝液 (50 mL 0.1M CH3COOH + 50 mL 0.1M CH3COONa)</option>
+                            </select>
+                        </div>
+
+                        <!-- Titrant Select & Concentration Slider -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-slate-400 block">滴定試劑 (Titrant) 種類與濃度</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="setTab3Titrant('hcl')" id="titrant-hcl-btn" class="px-3 py-2 rounded-xl border border-red-500/50 bg-red-500/20 text-red-300 font-semibold text-xs text-center transition">
+                                    強酸 (HCl)
+                                </button>
+                                <button onclick="setTab3Titrant('naoh')" id="titrant-naoh-btn" class="px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 font-semibold text-xs text-center transition hover:bg-slate-700/50">
+                                    強鹼 (NaOH)
+                                </button>
+                            </div>
+                            <div class="pt-2">
+                                <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                    <span>滴定劑莫耳濃度</span>
+                                    <span id="tab3-titrant-m-val" class="font-mono text-purple-400">1.0 M</span>
+                                </div>
+                                <input type="range" min="0.1" max="2.0" step="0.1" value="1.0" oninput="state.tab3.titrantConc=parseFloat(this.value); document.getElementById('tab3-titrant-m-val').innerText=this.value+' M'; initTab3Simulation();" class="w-full accent-purple-500 bg-slate-800 rounded-lg cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- Automated Titration Controls -->
+                        <div class="space-y-2 pt-2 border-t border-slate-700/60">
+                            <label class="text-xs font-semibold text-slate-400">滴定操作</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="addTitrantTab3(1)" class="px-3 py-2 bg-purple-600/30 border border-purple-500/50 hover:bg-purple-600/40 text-purple-200 rounded-xl font-medium text-xs transition">
+                                    + 1.0 mL 滴定
+                                </button>
+                                <button onclick="addTitrantTab3(5)" class="px-3 py-2 bg-purple-600/30 border border-purple-500/50 hover:bg-purple-600/40 text-purple-200 rounded-xl font-medium text-xs transition">
+                                    + 5.0 mL 快滴
+                                </button>
+                            </div>
+                            <button onclick="autoTitrateTab3()" id="auto-titrate-btn" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl text-xs transition shadow-lg flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play"></i>
+                                <span>自動連續滴定展示</span>
+                            </button>
+                            <button onclick="resetTab3()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs transition">
+                                重置滴定曲線
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Chart and Buffer Mechanism Explanation -->
+                <div class="lg:col-span-8 space-y-6">
+                    <!-- Dynamic Titration Curve Chart -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-semibold text-slate-200 text-sm flex items-center">
+                                <i class="fa-solid fa-chart-area text-purple-400 mr-2"></i>完整滴定曲線 (pH vs. 滴定劑 mL)
+                            </h3>
+                            <div class="text-xs text-purple-300 font-mono" id="tab3-ph-hud">
+                                當前 pH: 4.75 | 已加: 0.0 mL
+                            </div>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="tab3-titration-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Microscopic Neutralization Mechanism Explanation -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-3 border-purple-500/30">
+                        <h3 class="font-semibold text-purple-300 text-sm flex items-center">
+                            <i class="fa-solid fa-atom mr-2"></i>微觀緩衝機制與離子吸收反應
+                        </h3>
+                        <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 font-mono text-xs sm:text-sm text-slate-200 leading-relaxed" id="buffer-mechanism-math">
+                            <!-- KaTeX micro reaction equation -->
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed" id="buffer-mechanism-desc">
+                            當加入強酸 $H^+$ 時，緩衝對中的弱鹼形（如 $CH_3COO^-$）會立刻將其吸收轉換成弱酸；當加入強鹼 $OH^-$ 時，弱酸形（如 $CH_3COOH$）會與其中和生成水，從而抗拒 pH 的變動。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /* ==========================================================================
+           GLOBAL STATE & CONSTANTS
+           ========================================================================== */
+        const state = {
+            activeTab: 'tab1',
+            tab1: {
+                solutionType: 'pure_water',
+                dropsHCl: 0,
+                dropsNaOH: 0,
+                phHistory: [],
+                indicator: 'universal'
+            },
+            tab2: {
+                systemType: 'acidic', // 'acidic' or 'basic'
+                methodIndex: 1, // 1, 2, 3
+                // Species 1 (e.g. CH3COOH or NH3)
+                v1: 53,    // Volume (mL) - Preset 53 mL
+                m1: 0.10,  // Concentration (M) - Preset 0.1 M -> 5.3 mmol
+                // Species 2 (e.g. CH3COONa or NH4Cl)
+                v2: 58,    // Volume (mL) - Preset 58 mL
+                m2: 0.10,  // Concentration (M) - Preset 0.1 M -> 5.8 mmol
+            },
+            tab3: {
+                targetSystem: 'tab2_custom',
+                titrant: 'hcl',
+                titrantConc: 1.0,
+                titrantVolume: 0,
+                history: [],
+                isAutoTitrating: false,
+                autoTimer: null
+            }
+        };
+
+        const PK_A_ACETIC = 4.75;
+        const PK_A_AMMONIUM = 9.25;
+        const PK_B_AMMONIA = 4.75;
+
+        let chart1Instance = null;
+        let chart3Instance = null;
+
+        /* ==========================================================================
+           TAB SWITCHING LOGIC
+           ========================================================================== */
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            ['tab1', 'tab2', 'tab3'].forEach(id => {
+                const el = document.getElementById(id);
+                const btn = document.getElementById(`${id}-btn`);
+                if (id === tabId) {
+                    el.classList.remove('hidden');
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-emerald-600 text-white shadow-md";
+                } else {
+                    el.classList.add('hidden');
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-400 hover:text-white";
+                }
+            });
+
+            if (tabId === 'tab1') {
+                setTimeout(() => renderTab1Chart(), 50);
+            } else if (tabId === 'tab2') {
+                updateTab2UI();
+            } else if (tabId === 'tab3') {
+                initTab3Simulation();
+            }
+        }
+
+        /* ==========================================================================
+           TAB 1 LOGIC
+           ========================================================================== */
+        function setTab1Solution(type) {
+            state.tab1.solutionType = type;
+            state.tab1.dropsHCl = 0;
+            state.tab1.dropsNaOH = 0;
+            state.tab1.phHistory = [];
+
+            document.querySelectorAll('.sol-btn').forEach(btn => {
+                btn.className = "sol-btn px-3.5 py-3 rounded-xl border border-slate-700 bg-slate-800/50 text-left text-xs sm:text-sm font-medium transition flex items-center text-slate-300 hover:bg-slate-700/50";
+            });
+            const activeBtn = document.getElementById(`sol-${type}`);
+            if (activeBtn) {
+                activeBtn.className = "sol-btn px-3.5 py-3 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-left text-xs sm:text-sm font-medium transition flex items-center text-emerald-300";
+            }
+
+            updateTab1UI();
+        }
+
+        function calculateTab1pH() {
+            const { solutionType, dropsHCl, dropsNaOH } = state.tab1;
+            const deltaMmol = (dropsNaOH - dropsHCl) * 0.05; // 1 drop = 0.05 mL of 1.0 M = 0.05 mmol
+            const volL = 0.100;
+
+            let ph = 7.0;
+
+            switch (solutionType) {
+                case 'pure_water': {
+                    if (Math.abs(deltaMmol) < 1e-7) {
+                        ph = 7.00;
+                    } else if (deltaMmol > 0) {
+                        const concOH = deltaMmol / volL;
+                        ph = 14 + Math.log10(concOH);
+                    } else {
+                        const concH = Math.abs(deltaMmol) / volL;
+                        ph = -Math.log10(concH);
+                    }
+                    break;
+                }
+                case 'hcl_alone': {
+                    const initialH = 0.01 * volL;
+                    const netH = initialH - deltaMmol;
+                    if (netH > 0) {
+                        ph = -Math.log10(netH / volL);
+                    } else {
+                        ph = 14 + Math.log10(Math.abs(netH) / volL);
+                    }
+                    break;
+                }
+                case 'ch3cooh_alone': {
+                    const initialHA = 0.1 * volL;
+                    const ha = initialHA - deltaMmol;
+                    const a = Math.max(0, deltaMmol);
+                    if (a <= 0) {
+                        ph = 0.5 * (PK_A_ACETIC - Math.log10(0.1));
+                    } else if (ha <= 0) {
+                        ph = 13.0;
+                    } else {
+                        ph = PK_A_ACETIC + Math.log10(a / ha);
+                    }
+                    break;
+                }
+                case 'nh3_alone': {
+                    const initialB = 0.1 * volL;
+                    const b = initialB + deltaMmol;
+                    const bh = Math.max(0, -deltaMmol);
+                    if (bh <= 0) {
+                        ph = 14 - 0.5 * (PK_B_AMMONIA - Math.log10(0.1));
+                    } else if (b <= 0) {
+                        ph = 1.0;
+                    } else {
+                        ph = PK_A_AMMONIUM + Math.log10(b / bh);
+                    }
+                    break;
+                }
+                case 'acetate_buffer': {
+                    const ha = 10 - deltaMmol;
+                    const a = 10 + deltaMmol;
+                    if (ha > 0 && a > 0) {
+                        ph = PK_A_ACETIC + Math.log10(a / ha);
+                    } else if (ha <= 0) {
+                        ph = 12.0;
+                    } else {
+                        ph = 2.0;
+                    }
+                    break;
+                }
+                case 'ammonia_buffer': {
+                    const bh = 10 - deltaMmol;
+                    const b = 10 + deltaMmol;
+                    if (bh > 0 && b > 0) {
+                        ph = PK_A_AMMONIUM + Math.log10(b / bh);
+                    } else if (bh <= 0) {
+                        ph = 12.5;
+                    } else {
+                        ph = 1.5;
+                    }
+                    break;
+                }
+            }
+
+            return Math.min(14, Math.max(0, ph));
+        }
+
+        function getpHColor(ph, indicator) {
+            if (indicator === 'phenolphthalein') {
+                if (ph < 8.2) return 'rgba(241, 245, 249, 0.2)';
+                if (ph > 10.0) return 'rgba(236, 72, 153, 0.75)';
+                const alpha = ((ph - 8.2) / 1.8) * 0.75;
+                return `rgba(236, 72, 153, ${alpha})`;
+            } else if (indicator === 'bromothymol') {
+                if (ph < 6.0) return 'rgba(234, 179, 8, 0.65)';
+                if (ph > 7.6) return 'rgba(37, 99, 235, 0.65)';
+                return 'rgba(34, 197, 94, 0.65)';
+            } else {
+                if (ph <= 2) return 'rgba(239, 68, 68, 0.75)';
+                if (ph <= 4) return 'rgba(249, 115, 22, 0.75)';
+                if (ph <= 6) return 'rgba(234, 179, 8, 0.75)';
+                if (ph <= 8) return 'rgba(34, 197, 94, 0.75)';
+                if (ph <= 10) return 'rgba(6, 182, 212, 0.75)';
+                if (ph <= 12) return 'rgba(59, 130, 246, 0.75)';
+                return 'rgba(139, 92, 246, 0.75)';
+            }
+        }
+
+        function addDropTab1(type) {
+            if (type === 'hcl') state.tab1.dropsHCl++;
+            if (type === 'naoh') state.tab1.dropsNaOH++;
+
+            const dropper = document.getElementById('tab1-dropper');
+            dropper.style.opacity = '1';
+            dropper.style.transform = 'translate(-50%, 0)';
+            setTimeout(() => {
+                dropper.style.opacity = '0';
+                dropper.style.transform = 'translate(-50%, -20px)';
+            }, 400);
+
+            updateTab1UI();
+        }
+
+        function resetTab1() {
+            state.tab1.dropsHCl = 0;
+            state.tab1.dropsNaOH = 0;
+            state.tab1.phHistory = [];
+            updateTab1UI();
+        }
+
+        function updateTab1UI() {
+            const ph = calculateTab1pH();
+            const totalDrops = state.tab1.dropsHCl + state.tab1.dropsNaOH;
+            const indicator = document.getElementById('tab1-indicator').value;
+
+            state.tab1.phHistory.push({ drop: totalDrops, ph: ph });
+
+            document.getElementById('tab1-ph-val').innerText = ph.toFixed(2);
+            document.getElementById('tab1-drop-count').innerText = `${totalDrops} 滴`;
+
+            const color = getpHColor(ph, indicator);
+            document.getElementById('tab1-liquid').style.backgroundColor = color;
+
+            const pinPercent = (ph / 14) * 100;
+            document.getElementById('tab1-ph-indicator-pin').style.left = `${Math.min(98, Math.max(2, pinPercent))}%`;
+
+            const badge = document.getElementById('tab1-status-badge');
+            if (ph < 6.5) {
+                badge.innerText = "酸性";
+                badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-red-900/50 text-red-300 border border-red-700/50";
+            } else if (ph > 7.5) {
+                badge.innerText = "鹼性";
+                badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-blue-900/50 text-blue-300 border border-blue-700/50";
+            } else {
+                badge.innerText = "中性";
+                badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-900/50 text-emerald-300 border border-emerald-700/50";
+            }
+
+            renderTab1ParticlesAndExplanation(ph);
+            renderTab1Chart();
+        }
+
+        function renderTab1ParticlesAndExplanation(ph) {
+            const listEl = document.getElementById('tab1-particle-list');
+            const expEl = document.getElementById('tab1-explanation-box');
+            const type = state.tab1.solutionType;
+            const dropsHCl = state.tab1.dropsHCl;
+            const dropsNaOH = state.tab1.dropsNaOH;
+
+            let particles = [];
+            let explanation = "";
+
+            if (type === 'pure_water') {
+                const hCount = dropsHCl > dropsNaOH ? (dropsHCl - dropsNaOH) * 5 + 1 : 1;
+                const ohCount = dropsNaOH > dropsHCl ? (dropsNaOH - dropsHCl) * 5 + 1 : 1;
+                particles = [
+                    { name: 'H⁺ (游離氫離子)', count: hCount, color: 'text-red-400' },
+                    { name: 'OH⁻ (氫氧根離子)', count: ohCount, color: 'text-blue-400' },
+                    { name: 'H₂O (水分子)', count: 99, color: 'text-slate-400' }
+                ];
+                if (dropsHCl === 0 && dropsNaOH === 0) {
+                    explanation = "💡 <b>試樣狀態：</b> 純水 ($H_2O$)。此時水微弱游離，pH 為中性 7.00。請嘗試滴加酸或鹼觀察變化。";
+                } else if (dropsHCl > dropsNaOH) {
+                    explanation = `⚠️ <b>現象觀察：</b> 滴入 ${dropsHCl} 滴 HCl 後，$[H^+]$ 瞬間激增，pH 值迅速下降至 <b>${ph.toFixed(2)}</b>！`;
+                } else {
+                    explanation = `⚠️ <b>現象觀察：</b> 滴入 ${dropsNaOH} 滴 NaOH 後，$[OH^-]$ 瞬間激增，pH 值迅速上升至 <b>${ph.toFixed(2)}</b>！`;
+                }
+            } else if (type === 'acetate_buffer') {
+                particles = [
+                    { name: 'CH₃COOH (弱酸)', count: Math.max(1, 10 - dropsNaOH + dropsHCl), color: 'text-amber-300' },
+                    { name: 'CH₃COO⁻ (共軛鹼)', count: Math.max(1, 10 + dropsNaOH - dropsHCl), color: 'text-emerald-300' },
+                    { name: 'Na⁺ (旁觀離子)', count: 10, color: 'text-cyan-300' }
+                ];
+                explanation = `🧪 <b>現象觀察：</b> 混合溶液中含有 $CH_3COOH$ 與 $CH_3COO^-$。滴加少量強酸或強鹼時，pH 值維持在 <b>${ph.toFixed(2)}</b> 附近，變動非常微小！`;
+            } else if (type === 'ammonia_buffer') {
+                particles = [
+                    { name: 'NH₃ (弱鹼)', count: Math.max(1, 10 + dropsNaOH - dropsHCl), color: 'text-cyan-300' },
+                    { name: 'NH₄⁺ (共軛酸)', count: Math.max(1, 10 - dropsNaOH + dropsHCl), color: 'text-purple-300' },
+                    { name: 'Cl⁻ (旁觀離子)', count: 10, color: 'text-slate-400' }
+                ];
+                explanation = `🧪 <b>現象觀察：</b> 混合溶液中含有 $NH_3$ 與 $NH_4^+$。滴加酸鹼試劑後，pH 值穩定維持在 <b>${ph.toFixed(2)}</b> 附近！`;
+            } else {
+                particles = [
+                    { name: 'H⁺ / OH⁻', count: '動態平衡', color: 'text-amber-300' },
+                    { name: '溶質分子', count: '解離中', color: 'text-slate-300' }
+                ];
+                explanation = `單一酸/鹼溶液在滴加強酸強鹼後，pH 值呈現明顯變化。當前 pH = <b>${ph.toFixed(2)}</b>。`;
+            }
+
+            listEl.innerHTML = particles.map(p => `
+                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <span class="${p.color} font-medium text-[11px]">${p.name}</span>
+                    <span class="font-mono text-slate-200 font-bold">${p.count}</span>
+                </div>
+            `).join('');
+
+            expEl.innerHTML = explanation;
+            if (window.KaTeX) katex.renderTextAndMath(expEl);
+        }
+
+        function renderTab1Chart() {
+            const ctx = document.getElementById('tab1-chart').getContext('2d');
+            const labels = state.tab1.phHistory.map(h => `${h.drop} 滴`);
+            const data = state.tab1.phHistory.map(h => h.ph);
+
+            if (chart1Instance) chart1Instance.destroy();
+
+            chart1Instance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.length > 0 ? labels : ['0 滴'],
+                    datasets: [{
+                        label: '當前測試溶液 pH 軌跡',
+                        data: data.length > 0 ? data : [7.0],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 14, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                    },
+                    plugins: { legend: { labels: { color: '#e2e8f0' } } }
+                }
+            });
+        }
+
+        function clearChart1() {
+            state.tab1.phHistory = [];
+            renderTab1Chart();
+        }
+
+
+        /* ==========================================================================
+           STREAMING_CHUNK:Writing Tab 2 dynamic controls with Volume and Concentration sliders...
+           ========================================================================== */
+        function setBufferType(type) {
+            state.tab2.systemType = type;
+            state.tab2.methodIndex = 1;
+            
+            const acidicBtn = document.getElementById('type-acidic-btn');
+            const basicBtn = document.getElementById('type-basic-btn');
+
+            if (type === 'acidic') {
+                acidicBtn.className = "px-3 py-2.5 rounded-xl border border-amber-500/50 bg-amber-500/20 text-amber-300 font-semibold text-xs text-center transition";
+                basicBtn.className = "px-3 py-2.5 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 font-semibold text-xs text-center transition hover:bg-slate-700/50";
+            } else {
+                basicBtn.className = "px-3 py-2.5 rounded-xl border border-cyan-500/50 bg-cyan-500/20 text-cyan-300 font-semibold text-xs text-center transition";
+                acidicBtn.className = "px-3 py-2.5 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 font-semibold text-xs text-center transition hover:bg-slate-700/50";
+            }
+
+            updateTab2UI();
+        }
+
+        function setTab2Method(index) {
+            state.tab2.methodIndex = index;
+            updateTab2UI();
+        }
+
+        function applyPresetTab2(presetKey) {
+            state.tab2.systemType = 'acidic';
+            state.tab2.methodIndex = 1;
+
+            if (presetKey === '53_58') {
+                state.tab2.v1 = 53;
+                state.tab2.m1 = 0.10;
+                state.tab2.v2 = 58;
+                state.tab2.m2 = 0.10;
+            } else if (presetKey === 'equal') {
+                state.tab2.v1 = 100;
+                state.tab2.m1 = 0.10;
+                state.tab2.v2 = 100;
+                state.tab2.m2 = 0.10;
+            }
+
+            setBufferType('acidic');
+        }
+
+        function updateTab2UI() {
+            const container = document.getElementById('method-options-container');
+            const isAcidic = state.tab2.systemType === 'acidic';
+            const method = state.tab2.methodIndex;
+
+            let methodsHTML = '';
+            if (isAcidic) {
+                methodsHTML = `
+                    <button onclick="setTab2Method(1)" class="w-full p-2.5 rounded-xl text-left text-xs transition border ${method === 1 ? 'border-amber-500 bg-amber-500/10 text-amber-200' : 'border-slate-800 bg-slate-900/60 text-slate-400'}">
+                        <b>配方 1: 弱酸 + 共軛鹼直配</b><br>
+                        <span class="text-[10px] opacity-80">CH₃COOH + CH₃COONa (直接混合兩者)</span>
+                    </button>
+                    <button onclick="setTab2Method(2)" class="w-full p-2.5 rounded-xl text-left text-xs transition border ${method === 2 ? 'border-amber-500 bg-amber-500/10 text-amber-200' : 'border-slate-800 bg-slate-900/60 text-slate-400'}">
+                        <b>配方 2: 過量弱酸 + 強鹼</b><br>
+                        <span class="text-[10px] opacity-80">過量 CH₃COOH + 少量 NaOH 中和生成共軛鹼</span>
+                    </button>
+                    <button onclick="setTab2Method(3)" class="w-full p-2.5 rounded-xl text-left text-xs transition border ${method === 3 ? 'border-amber-500 bg-amber-500/10 text-amber-200' : 'border-slate-800 bg-slate-900/60 text-slate-400'}">
+                        <b>配方 3: 過量共軛鹼 + 強酸</b><br>
+                        <span class="text-[10px] opacity-80">過量 CH₃COONa + 少量 HCl 中和生成弱酸</span>
+                    </button>
+                `;
+            } else {
+                methodsHTML = `
+                    <button onclick="setTab2Method(1)" class="w-full p-2.5 rounded-xl text-left text-xs transition border ${method === 1 ? 'border-cyan-500 bg-cyan-500/10 text-cyan-200' : 'border-slate-800 bg-slate-900/60 text-slate-400'}">
+                        <b>配方 1: 弱鹼 + 共軛酸直配</b><br>
+                        <span class="text-[10px] opacity-80">NH₃ + NH₄Cl (直接混合兩者)</span>
+                    </button>
+                    <button onclick="setTab2Method(2)" class="w-full p-2.5 rounded-xl text-left text-xs transition border ${method === 2 ? 'border-cyan-500 bg-cyan-500/10 text-cyan-200' : 'border-slate-800 bg-slate-900/60 text-slate-400'}">
+                        <b>配方 2: 過量弱鹼 + 強酸</b><br>
+                        <span class="text-[10px] opacity-80">過量 NH₃ + 少量 HCl 中和生成共軛酸</span>
+                    </button>
+                    <button onclick="setTab2Method(3)" class="w-full p-2.5 rounded-xl text-left text-xs transition border ${method === 3 ? 'border-cyan-500 bg-cyan-500/10 text-cyan-200' : 'border-slate-800 bg-slate-900/60 text-slate-400'}">
+                        <b>配方 3: 過量共軛酸 + 強鹼</b><br>
+                        <span class="text-[10px] opacity-80">過量 NH₄Cl + 少量 NaOH 中和生成弱鹼</span>
+                    </button>
+                `;
+            }
+            container.innerHTML = methodsHTML;
+
+            renderTab2Sliders();
+            calculateAndRenderTab2Results();
+        }
+
+        function renderTab2Sliders() {
+            const container = document.getElementById('sliders-container');
+            const isAcidic = state.tab2.systemType === 'acidic';
+            const method = state.tab2.methodIndex;
+
+            let name1 = "", name2 = "";
+            if (isAcidic) {
+                if (method === 1) { name1 = 'CH₃COOH'; name2 = 'CH₃COONa'; }
+                if (method === 2) { name1 = '過量 CH₃COOH'; name2 = '強鹼 NaOH'; }
+                if (method === 3) { name1 = '過量 CH₃COONa'; name2 = '強酸 HCl'; }
+            } else {
+                if (method === 1) { name1 = 'NH₃'; name2 = 'NH₄Cl'; }
+                if (method === 2) { name1 = '過量 NH₃'; name2 = '強酸 HCl'; }
+                if (method === 3) { name1 = '過量 NH₄Cl'; name2 = '強鹼 NaOH'; }
+            }
+
+            const mmol1 = (state.tab2.v1 * state.tab2.m1).toFixed(2);
+            const mmol2 = (state.tab2.v2 * state.tab2.m2).toFixed(2);
+
+            container.innerHTML = `
+                <!-- Component 1 Group -->
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-200 border-b border-slate-800 pb-1">
+                        <span>🧪 成分 1: ${name1}</span>
+                        <span class="text-amber-400 font-mono">${mmol1} mmol</span>
+                    </div>
+                    <!-- Volume 1 Slider -->
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-0.5">
+                            <span>體積 (V)</span>
+                            <span class="font-mono text-cyan-300">${state.tab2.v1} mL</span>
+                        </div>
+                        <input type="range" min="1" max="200" step="1" value="${state.tab2.v1}" 
+                            oninput="state.tab2.v1=parseInt(this.value); updateTab2UI();" 
+                            class="w-full accent-cyan-500 bg-slate-800 rounded-lg cursor-pointer">
+                    </div>
+                    <!-- Concentration 1 Slider -->
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-0.5">
+                            <span>莫耳濃度 (M)</span>
+                            <span class="font-mono text-emerald-300">${state.tab2.m1.toFixed(2)} M</span>
+                        </div>
+                        <input type="range" min="0.01" max="2.00" step="0.01" value="${state.tab2.m1}" 
+                            oninput="state.tab2.m1=parseFloat(this.value); updateTab2UI();" 
+                            class="w-full accent-emerald-500 bg-slate-800 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Component 2 Group -->
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-200 border-b border-slate-800 pb-1">
+                        <span>🧪 成分 2: ${name2}</span>
+                        <span class="text-amber-400 font-mono">${mmol2} mmol</span>
+                    </div>
+                    <!-- Volume 2 Slider -->
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-0.5">
+                            <span>體積 (V)</span>
+                            <span class="font-mono text-cyan-300">${state.tab2.v2} mL</span>
+                        </div>
+                        <input type="range" min="1" max="200" step="1" value="${state.tab2.v2}" 
+                            oninput="state.tab2.v2=parseInt(this.value); updateTab2UI();" 
+                            class="w-full accent-cyan-500 bg-slate-800 rounded-lg cursor-pointer">
+                    </div>
+                    <!-- Concentration 2 Slider -->
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-0.5">
+                            <span>莫耳濃度 (M)</span>
+                            <span class="font-mono text-emerald-300">${state.tab2.m2.toFixed(2)} M</span>
+                        </div>
+                        <input type="range" min="0.01" max="2.00" step="0.01" value="${state.tab2.m2}" 
+                            oninput="state.tab2.m2=parseFloat(this.value); updateTab2UI();" 
+                            class="w-full accent-emerald-500 bg-slate-800 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+            `;
+        }
+
+        function calculateAndRenderTab2Results() {
+            const isAcidic = state.tab2.systemType === 'acidic';
+            const method = state.tab2.methodIndex;
+            const m1 = state.tab2.v1 * state.tab2.m1; // total mmol component 1
+            const m2 = state.tab2.v2 * state.tab2.m2; // total mmol component 2
+
+            let eqTex = "";
+            let col1Name = "", col2Name = "", col3Name = "";
+            let i1 = 0, i2 = 0, i3 = 0;
+            let c1 = 0, c2 = 0, c3 = 0;
+            let f1 = 0, f2 = 0, f3 = 0;
+
+            let finalAcidMmol = 0;
+            let finalBaseMmol = 0;
+            let pKa = isAcidic ? PK_A_ACETIC : PK_A_AMMONIUM;
+
+            document.getElementById('pka-label').innerText = isAcidic ? "pKa (CH3COOH) = 4.75" : "pKa (NH4+) = 9.25";
+
+            if (isAcidic) {
+                if (method === 1) {
+                    eqTex = "\\text{CH}_3\\text{COOH} \\rightleftharpoons \\text{CH}_3\\text{COO}^- + \\text{H}^+";
+                    col1Name = "CH₃COOH"; col2Name = "CH₃COO⁻"; col3Name = "H⁺";
+                    i1 = m1; i2 = m2; i3 = 0;
+                    c1 = 0; c2 = 0; c3 = 0;
+                    f1 = m1; f2 = m2; f3 = 0;
+                    finalAcidMmol = f1;
+                    finalBaseMmol = f2;
+                } else if (method === 2) {
+                    eqTex = "\\text{CH}_3\\text{COOH} + \\text{NaOH} \\rightarrow \\text{CH}_3\\text{COONa} + \\text{H}_2\\text{O}";
+                    col1Name = "CH₃COOH"; col2Name = "NaOH"; col3Name = "CH₃COO⁻";
+                    i1 = m1; i2 = m2; i3 = 0;
+                    const limit = Math.min(i1, i2);
+                    c1 = -limit; c2 = -limit; c3 = +limit;
+                    f1 = Math.max(0, i1 - limit); f2 = Math.max(0, i2 - limit); f3 = limit;
+                    finalAcidMmol = f1;
+                    finalBaseMmol = f3;
+                } else if (method === 3) {
+                    eqTex = "\\text{CH}_3\\text{COO}^- + \\text{H}^+ \\rightarrow \\text{CH}_3\\text{COOH}";
+                    col1Name = "CH₃COO⁻"; col2Name = "HCl (H⁺)"; col3Name = "CH₃COOH";
+                    i1 = m1; i2 = m2; i3 = 0;
+                    const limit = Math.min(i1, i2);
+                    c1 = -limit; c2 = -limit; c3 = +limit;
+                    f1 = Math.max(0, i1 - limit); f2 = Math.max(0, i2 - limit); f3 = limit;
+                    finalAcidMmol = f3;
+                    finalBaseMmol = f1;
+                }
+            } else {
+                if (method === 1) {
+                    eqTex = "\\text{NH}_4^+ \\rightleftharpoons \\text{NH}_3 + \\text{H}^+";
+                    col1Name = "NH₄⁺ (共軛酸)"; col2Name = "NH₃ (弱鹼)"; col3Name = "H⁺";
+                    i1 = m2; i2 = m1; i3 = 0;
+                    c1 = 0; c2 = 0; c3 = 0;
+                    f1 = m2; f2 = m1; f3 = 0;
+                    finalAcidMmol = f1;
+                    finalBaseMmol = f2;
+                } else if (method === 2) {
+                    eqTex = "\\text{NH}_3 + \\text{H}^+ \\rightarrow \\text{NH}_4^+";
+                    col1Name = "NH₃ (弱鹼)"; col2Name = "HCl (H⁺)"; col3Name = "NH₄⁺ (共軛酸)";
+                    i1 = m1; i2 = m2; i3 = 0;
+                    const limit = Math.min(i1, i2);
+                    c1 = -limit; c2 = -limit; c3 = +limit;
+                    f1 = Math.max(0, i1 - limit); f2 = Math.max(0, i2 - limit); f3 = limit;
+                    finalAcidMmol = f3;
+                    finalBaseMmol = f1;
+                } else if (method === 3) {
+                    eqTex = "\\text{NH}_4^+ + \\text{OH}^- \\rightarrow \\text{NH}_3 + \\text{H}_2\\text{O}";
+                    col1Name = "NH₄⁺ (共軛酸)"; col2Name = "NaOH (OH⁻)"; col3Name = "NH₃ (弱鹼)";
+                    i1 = m1; i2 = m2; i3 = 0;
+                    const limit = Math.min(i1, i2);
+                    c1 = -limit; c2 = -limit; c3 = +limit;
+                    f1 = Math.max(0, i1 - limit); f2 = Math.max(0, i2 - limit); f3 = limit;
+                    finalAcidMmol = f1;
+                    finalBaseMmol = f3;
+                }
+            }
+
+            katex.render(eqTex, document.getElementById('reaction-equation-math'), { throwOnError: false });
+
+            document.getElementById('ice-col-1').innerText = col1Name;
+            document.getElementById('ice-col-2').innerText = col2Name;
+            document.getElementById('ice-col-3').innerText = col3Name;
+
+            document.getElementById('ice-i1').innerText = `${i1.toFixed(2)} mmol`;
+            document.getElementById('ice-i2').innerText = `${i2.toFixed(2)} mmol`;
+            document.getElementById('ice-i3').innerText = `${i3.toFixed(2)} mmol`;
+
+            document.getElementById('ice-c1').innerText = `${c1 >= 0 ? '+' : ''}${c1.toFixed(2)}`;
+            document.getElementById('ice-c2').innerText = `${c2 >= 0 ? '+' : ''}${c2.toFixed(2)}`;
+            document.getElementById('ice-c3').innerText = `${c3 >= 0 ? '+' : ''}${c3.toFixed(2)}`;
+
+            document.getElementById('ice-f1').innerText = `${f1.toFixed(2)} mmol`;
+            document.getElementById('ice-f2').innerText = `${f2.toFixed(2)} mmol`;
+            document.getElementById('ice-f3').innerText = `${f3.toFixed(2)} mmol`;
+
+            let ph = 7.0;
+            let ratio = 1.0;
+            if (finalAcidMmol > 0 && finalBaseMmol > 0) {
+                ratio = finalBaseMmol / finalAcidMmol;
+                ph = pKa + Math.log10(ratio);
+            } else if (finalAcidMmol <= 0 && finalBaseMmol > 0) {
+                ph = 13.0;
+                ratio = 999;
+            } else if (finalBaseMmol <= 0 && finalAcidMmol > 0) {
+                ph = 1.0;
+                ratio = 0.001;
+            }
+
+            const baseSymbol = isAcidic ? "\\text{CH}_3\\text{COO}^-" : "\\text{NH}_3";
+            const acidSymbol = isAcidic ? "\\text{CH}_3\\text{COOH}" : "\\text{NH}_4^+";
+
+            const hhTex = `\\text{pH} = \\text{pKa} + \\log \\left( \\frac{[${baseSymbol}]}{[${acidSymbol}]} \\right) = ${pKa.toFixed(2)} + \\log \\left( \\frac{${finalBaseMmol.toFixed(2)}}{${finalAcidMmol.toFixed(2)}} \\right) = \\mathbf{${ph.toFixed(2)}}`;
+            katex.render(hhTex, document.getElementById('hh-math-display'), { throwOnError: false });
+
+            document.getElementById('calculated-ph-val').innerText = ph.toFixed(2);
+            document.getElementById('ratio-text').innerText = `[共軛鹼] / [共軛酸] 比值 = ${ratio.toFixed(2)}`;
+
+            const total = finalAcidMmol + finalBaseMmol;
+            const acidPct = total > 0 ? (finalAcidMmol / total) * 100 : 50;
+            const basePct = total > 0 ? (finalBaseMmol / total) * 100 : 50;
+
+            document.getElementById('bar-acid').style.width = `${acidPct}%`;
+            document.getElementById('bar-acid').innerText = `酸形 ${acidPct.toFixed(0)}% (${finalAcidMmol.toFixed(1)} mmol)`;
+            document.getElementById('bar-base').style.width = `${basePct}%`;
+            document.getElementById('bar-base').innerText = `鹼形 ${basePct.toFixed(0)}% (${finalBaseMmol.toFixed(1)} mmol)`;
+
+            const capTag = document.getElementById('buffer-capacity-tag');
+            if (ratio >= 0.1 && ratio <= 10) {
+                capTag.innerText = `🛡️ 最佳緩衝容量區間 (0.1 < 比值 < 10)`;
+                capTag.className = "text-emerald-400 font-bold";
+            } else {
+                capTag.innerText = `⚠️ 緩衝容量偏低或已失效`;
+                capTag.className = "text-amber-400 font-bold";
+            }
+        }
+
+
+        /* ==========================================================================
+           TAB 3 LOGIC
+           ========================================================================== */
+        function setTab3Titrant(titrant) {
+            state.tab3.titrant = titrant;
+            const hclBtn = document.getElementById('titrant-hcl-btn');
+            const naohBtn = document.getElementById('titrant-naoh-btn');
+
+            if (titrant === 'hcl') {
+                hclBtn.className = "px-3 py-2 rounded-xl border border-red-500/50 bg-red-500/20 text-red-300 font-semibold text-xs text-center transition";
+                naohBtn.className = "px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 font-semibold text-xs text-center transition hover:bg-slate-700/50";
+            } else {
+                naohBtn.className = "px-3 py-2 rounded-xl border border-blue-500/50 bg-blue-500/20 text-blue-300 font-semibold text-xs text-center transition";
+                hclBtn.className = "px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 font-semibold text-xs text-center transition hover:bg-slate-700/50";
+            }
+
+            initTab3Simulation();
+        }
+
+        function initTab3Simulation() {
+            if (state.tab3.autoTimer) clearInterval(state.tab3.autoTimer);
+            state.tab3.isAutoTitrating = false;
+            document.getElementById('auto-titrate-btn').innerHTML = `<i class="fa-solid fa-play"></i><span>自動連續滴定展示</span>`;
+
+            state.tab3.titrantVolume = 0;
+            state.tab3.history = [];
+
+            const initialPH = calculateTab3pH(0);
+            state.tab3.history.push({ vol: 0, ph: initialPH });
+
+            updateTab3UI();
+        }
+
+        function addTitrantTab3(v) {
+            state.tab3.titrantVolume += v;
+            const ph = calculateTab3pH(state.tab3.titrantVolume);
+            state.tab3.history.push({ vol: state.tab3.titrantVolume, ph: ph });
+            updateTab3UI();
+        }
+
+        function autoTitrateTab3() {
+            if (state.tab3.isAutoTitrating) {
+                clearInterval(state.tab3.autoTimer);
+                state.tab3.isAutoTitrating = false;
+                document.getElementById('auto-titrate-btn').innerHTML = `<i class="fa-solid fa-play"></i><span>自動連續滴定展示</span>`;
+                return;
+            }
+
+            state.tab3.isAutoTitrating = true;
+            document.getElementById('auto-titrate-btn').innerHTML = `<i class="fa-solid fa-pause"></i><span>暫停滴定</span>`;
+
+            state.tab3.autoTimer = setInterval(() => {
+                if (state.tab3.titrantVolume >= 30) {
+                    clearInterval(state.tab3.autoTimer);
+                    state.tab3.isAutoTitrating = false;
+                    document.getElementById('auto-titrate-btn').innerHTML = `<i class="fa-solid fa-play"></i><span>重新滴定</span>`;
+                    return;
+                }
+                addTitrantTab3(0.5);
+            }, 200);
+        }
+
+        function resetTab3() {
+            initTab3Simulation();
+        }
+
+        function calculateTab3pH(vTitrant) {
+            const titrant = state.tab3.titrant;
+            const titrantM = state.tab3.titrantConc;
+            const system = document.getElementById('tab3-target-system').value;
+
+            let ha = 5.3;
+            let a = 5.8;
+            let pKa = PK_A_ACETIC;
+
+            if (system === 'pure_water_100ml') {
+                const volTotalL = 0.100 + (vTitrant / 1000);
+                if (vTitrant === 0) return 7.0;
+                const addedMmol = vTitrant * titrantM;
+                if (titrant === 'hcl') {
+                    const concH = addedMmol / (volTotalL * 1000);
+                    return -Math.log10(concH);
+                } else {
+                    const concOH = addedMmol / (volTotalL * 1000);
+                    return 14 + Math.log10(concOH);
+                }
+            } else if (system === 'tab2_custom') {
+                const isAcidic = state.tab2.systemType === 'acidic';
+                pKa = isAcidic ? PK_A_ACETIC : PK_A_AMMONIUM;
+
+                const m1 = state.tab2.v1 * state.tab2.m1;
+                const m2 = state.tab2.v2 * state.tab2.m2;
+                ha = m1;
+                a = m2;
+            } else if (system === 'standard_acetate_buffer') {
+                ha = 5.0; // 50 mL * 0.1 M
+                a = 5.0;  // 50 mL * 0.1 M
+            }
+
+            const titrantMmol = vTitrant * titrantM;
+            let netHA = ha;
+            let netA = a;
+
+            if (titrant === 'hcl') {
+                netHA += titrantMmol;
+                netA -= titrantMmol;
+            } else {
+                netHA -= titrantMmol;
+                netA += titrantMmol;
+            }
+
+            if (netA > 0 && netHA > 0) {
+                return pKa + Math.log10(netA / netHA);
+            } else if (netA <= 0) {
+                const excessHCl = Math.abs(netA);
+                const concH = excessHCl / 100;
+                return Math.max(0, -Math.log10(concH));
+            } else {
+                const excessNaOH = Math.abs(netHA);
+                const concOH = excessNaOH / 100;
+                return Math.min(14, 14 + Math.log10(concOH));
+            }
+        }
+
+        function updateTab3UI() {
+            const currentVol = state.tab3.titrantVolume;
+            const currentPH = calculateTab3pH(currentVol);
+
+            document.getElementById('tab3-ph-hud').innerText = `當前 pH: ${currentPH.toFixed(2)} | 已加: ${currentVol.toFixed(1)} mL`;
+
+            const titrant = state.tab3.titrant;
+            const mechanismEl = document.getElementById('buffer-mechanism-math');
+            const descEl = document.getElementById('buffer-mechanism-desc');
+
+            if (titrant === 'hcl') {
+                katex.render("\\text{外加強酸反應：} \\quad \\text{CH}_3\\text{COO}^- + \\text{H}^+ \\rightarrow \\text{CH}_3\\text{COOH}", mechanismEl, { throwOnError: false });
+                descEl.innerHTML = "🛡️ <b>抗酸機制：</b> 滴入的強酸 $H^+$ 被緩衝系統中的共軛鹼 $CH_3COO^-$ 吸收，轉化為弱酸分子 $CH_3COOH$，阻斷 $[H^+]$ 暴增！";
+            } else {
+                katex.render("\\text{外加強鹼反應：} \\quad \\text{CH}_3\\text{COOH} + \\text{OH}^- \\rightarrow \\text{CH}_3\\text{COO}^- + \\text{H}_2\\text{O}", mechanismEl, { throwOnError: false });
+                descEl.innerHTML = "🛡️ <b>抗鹼機制：</b> 滴入的強鹼 $OH^-$ 被緩衝系統中的弱酸 $CH_3COOH$ 即時中和成水與 $CH_3COO^-$，避免 $[OH^-]$ 暴漲！";
+            }
+            if (window.KaTeX) katex.renderTextAndMath(descEl);
+
+            renderTab3Chart();
+        }
+
+        function renderTab3Chart() {
+            const ctx = document.getElementById('tab3-titration-chart').getContext('2d');
+            const labels = state.tab3.history.map(h => `${h.vol.toFixed(1)} mL`);
+            const data = state.tab3.history.map(h => h.ph);
+
+            if (chart3Instance) chart3Instance.destroy();
+
+            chart3Instance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `滴定 pH 曲線 (${state.tab3.titrant.toUpperCase()} ${state.tab3.titrantConc}M)`,
+                        data: data,
+                        borderColor: state.tab3.titrant === 'hcl' ? '#ef4444' : '#3b82f6',
+                        backgroundColor: state.tab3.titrant === 'hcl' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 14, title: { display: true, text: 'pH 值', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        x: { title: { display: true, text: '滴定劑體積 (mL)', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                    },
+                    plugins: { legend: { labels: { color: '#e2e8f0' } } }
+                }
+            });
+        }
+
+        /* INITIALIZATION */
+        window.onload = function() {
+            if (window.KaTeX) katex.renderTextAndMath(document.body);
+            setTab1Solution('pure_water');
+            switchTab('tab1');
+        };
+    </script>
+</body>
+</html>
